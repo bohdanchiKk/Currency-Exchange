@@ -5,10 +5,10 @@ CREATE TABLE IF NOT EXISTS Currencies (
         sign varchar not null
 );
 
-CREATE TABLE IF NOT EXISTS ExchngeRates (
+CREATE TABLE IF NOT EXISTS ExchangeRates (
         id bigserial PRIMARY KEY,
         baseCurrencyId bigint references Currencies(id),
         targetCurrencyId bigint references Currencies(id),
-        rate decimal(6)
+        rate decimal(10, 6)
         CHECK (baseCurrencyId <> targetCurrencyId)
 )

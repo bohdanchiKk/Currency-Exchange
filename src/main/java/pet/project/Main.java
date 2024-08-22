@@ -15,27 +15,5 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
-    public static void main(String[] args) throws SQLException, IOException {
 
-        final DataSource dataSource = MyDataSource.getInstance();
-        ObjectMapper mapper = new ObjectMapper();
-        StringWriter writer = new StringWriter();
-
-        try(Connection connection = dataSource.getConnection()) {
-            String sql = "select * from Currencies";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.execute();
-            ResultSet resultSet = preparedStatement.getResultSet();
-            List<Currency> currencyList = new ArrayList<>();
-
-            while (resultSet.next()){
-                currencyList.add(new Currency(resultSet.getLong("id"),
-                        resultSet.getString("code"),
-                        resultSet.getString("fullname"),
-                        resultSet.getString("sign")));
-            }
-            mapper.writeValue(writer,currencyList);
-            System.out.println(writer.toString());
-        }
-    }
 }
