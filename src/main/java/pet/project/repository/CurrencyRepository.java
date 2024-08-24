@@ -1,4 +1,7 @@
 package pet.project.repository;
 
-public interface CurrencyRepository extends CrudRepository{
+import pet.project.entity.Currency;
+
+public interface CurrencyRepository extends CrudRepository<Currency> {
+
 }
