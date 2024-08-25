@@ -122,6 +122,12 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
 
     @Override
     public void delete(Long id) throws SQLException {
+        final String sql = " delete * from excahngerates where exchangerates.id = ?";
 
+        try (Connection connection = dataSource.getConnection()){
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1,id);
+            preparedStatement.execute();
+        }
     }
 }

@@ -89,5 +89,27 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
         }
     }
+
+    @Override
+    public Optional<Currency> findByCode(String code) throws SQLException {
+        final String sql = "select * from currencies where currencies.code = ?";
+
+        try (Connection connection = dataSource.getConnection()){
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1,code);
+            preparedStatement.execute();
+
+            ResultSet resultSet = preparedStatement.getResultSet();
+            if (resultSet.next()){
+                return Optional.of(new Currency(
+                        resultSet.getLong("id"),
+                        resultSet.getString("code"),
+                        resultSet.getString("fullname"),
+                        resultSet.getString("sign")
+                ));
+            }
+            return Optional.empty();
+        }
+    }
 }
 

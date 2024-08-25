@@ -7,10 +7,13 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import pet.project.entity.Currency;
 import pet.project.entity.ExchangeRate;
+import pet.project.repository.JdbcCurrencyRepository;
 import pet.project.repository.JdbcExchangeRateRepository;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ExchangeRatesServlet extends HttpServlet {
     private final JdbcExchangeRateRepository exchangeRateRepository = new JdbcExchangeRateRepository();
+    private final JdbcCurrencyRepository currencyRepository = new JdbcCurrencyRepository();
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -41,11 +45,33 @@ public class ExchangeRatesServlet extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doPost(req, resp);
+        String baseCode = req.getParameter("baseCode");
+        String targetCode = req.getParameter("targetCode");
+        String rate = req.getParameter("rate");
+        try {
+            Optional<Currency> baseCurrency = currencyRepository.findByCode(baseCode);
+            Optional<Currency> targetCurrency = currencyRepository.findByCode(targetCode);
+
+            if (baseCurrency.isPresent() && targetCurrency.isPresent()){
+                ExchangeRate exchangeRate = new ExchangeRate(baseCurrency.get(),targetCurrency.get(), BigDecimal.valueOf(Double.parseDouble(rate)));
+                Long savedId = exchangeRateRepository.save(exchangeRate);
+                exchangeRate.setId(savedId);
+
+                mapper.writeValue(resp.getWriter(),exchangeRate);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        super.doDelete(req, resp);
+        try {
+            final String id = req.getParameter("id");
+            exchangeRateRepository.delete(Long.valueOf(id));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
