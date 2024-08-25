@@ -15,7 +15,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
     private final DataSource dataSource = MyDataSource.getInstance();
 
     @Override
-    public Optional findById(Long id) throws SQLException {
+    public Optional<Currency> findById(Long id) throws SQLException {
         final String sql = "select * from currencies where currencies.id = ?";
         try (Connection connection = MyDataSource.getInstance().getConnection()){
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -44,6 +44,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
             List<pet.project.entity.Currency> currencyList = new ArrayList<>();
             while (resultSet.next()){
                 currencyList.add(new pet.project.entity.Currency(
+                        resultSet.getLong("id"),
                         resultSet.getString("code"),
                         resultSet.getString("fullName"),
                         resultSet.getString("sign")
