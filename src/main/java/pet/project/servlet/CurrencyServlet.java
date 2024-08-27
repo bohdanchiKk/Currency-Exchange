@@ -46,10 +46,10 @@ public class CurrencyServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         String code = req.getParameter("code");
-        String fullName = req.getParameter("name");
+        String fullName = req.getParameter("fullName");
         String sign = req.getParameter("sign");
 
-        if (code == null || fullName == null || sign == null){
+        if (code.isEmpty() || fullName.isEmpty() || sign.isEmpty()){
             resp.setStatus(SC_BAD_REQUEST);
             mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST,"Missing or invalid parameter(s)"));
             return;
