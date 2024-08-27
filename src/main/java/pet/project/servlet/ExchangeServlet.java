@@ -30,6 +30,12 @@ public class ExchangeServlet extends HttpServlet {
         String targetCurrency = req.getParameter("to");
         String amount = req.getParameter("amount");
 
+        if (baseCurrency.equals(targetCurrency)){
+            resp.setStatus(SC_BAD_REQUEST);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST,"Identical currencies!"));
+            return;
+        }
+
         try {
             Optional<ExchangeRate> pair = repository.findByCode(baseCurrency,targetCurrency);
 

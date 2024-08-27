@@ -53,11 +53,11 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
                 "                ex.rate as rate,\n" +
                 "                bc.id as base_id,\n" +
                 "                bc.code as base_code,\n" +
-                "                bc.fullname as base_full_name,\n" +
+                "                bc.fullname as base_name,\n" +
                 "                bc.sign as base_sign,\n" +
                 "                tg.id as target_id,\n" +
                 "                tg.code as target_code,\n" +
-                "                tg.fullname as target_full_name,\n" +
+                "                tg.fullname as target_name,\n" +
                 "                tg.sign as target_sign\n" +
                 "                from exchangerates ex\n" +
                 "                join currencies bc on ex.basecurrencyid = bc.id\n" +

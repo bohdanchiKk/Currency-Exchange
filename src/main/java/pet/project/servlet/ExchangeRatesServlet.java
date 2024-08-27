@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import static jakarta.servlet.http.HttpServletResponse.SC_BAD_REQUEST;
 import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 @WebServlet(name = "ExchangeRatesServlet", urlPatterns = "/exchangeRates")
@@ -52,6 +53,24 @@ public class ExchangeRatesServlet extends HttpServlet {
         String baseCode = req.getParameter("baseCurrencyCode");
         String targetCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
+        if (baseCode.equals(targetCode)){
+            resp.setStatus(SC_BAD_REQUEST);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST,"Identical currencies!"));
+            return;
+        }
+
+        try {
+            if (exchangeRateRepository.findByCode(baseCode,targetCode).isPresent() ||
+                exchangeRateRepository.findByCode(targetCode,baseCode).isPresent()){
+                resp.setStatus(SC_BAD_REQUEST);
+                mapper.writeValue(resp.getWriter(),new ErrorResponse(SC_BAD_REQUEST,"Pair already exists!"));
+                return;
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
         try {
             Optional<Currency> baseCurrency = currencyRepository.findByCode(baseCode);
             Optional<Currency> targetCurrency = currencyRepository.findByCode(targetCode);

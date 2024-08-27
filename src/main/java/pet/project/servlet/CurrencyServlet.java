@@ -49,9 +49,14 @@ public class CurrencyServlet extends HttpServlet {
         String fullName = req.getParameter("name");
         String sign = req.getParameter("sign");
 
-        if (code == null || fullName == null || sign == null || code.length() > 3){
+        if (code == null || fullName == null || sign == null){
             resp.setStatus(SC_BAD_REQUEST);
             mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST,"Missing or invalid parameter(s)"));
+            return;
+        }
+        if (code.length() > 3){
+            resp.setStatus(SC_BAD_REQUEST);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST, "Code must contain only 3 letters!"));
             return;
         }
 
