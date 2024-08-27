@@ -7,14 +7,11 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import pet.project.config.MyDataSource;
 import pet.project.entity.Currency;
 import pet.project.entity.response.ErrorResponse;
-import pet.project.repository.CurrencyRepository;
 import pet.project.repository.JdbcCurrencyRepository;
 
 import java.io.IOException;
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -52,7 +49,7 @@ public class CurrencyServlet extends HttpServlet {
         String fullName = req.getParameter("name");
         String sign = req.getParameter("sign");
 
-        if (code == null || fullName == null || sign == null){
+        if (code == null || fullName == null || sign == null || code.length() > 3){
             resp.setStatus(SC_BAD_REQUEST);
             mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_BAD_REQUEST,"Missing or invalid parameter(s)"));
             return;

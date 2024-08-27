@@ -9,15 +9,17 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import pet.project.entity.Currency;
 import pet.project.entity.ExchangeRate;
+import pet.project.entity.response.ErrorResponse;
 import pet.project.repository.JdbcCurrencyRepository;
 import pet.project.repository.JdbcExchangeRateRepository;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+
+import static jakarta.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 @WebServlet(name = "ExchangeRatesServlet", urlPatterns = "/exchangeRates")
 @RequiredArgsConstructor
@@ -39,14 +41,16 @@ public class ExchangeRatesServlet extends HttpServlet {
             List<ExchangeRate> exchangeRateList = exchangeRateRepository.findAll();
             mapper.writeValue(resp.getWriter(),exchangeRateList);
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database, try again later!"));
         }
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String baseCode = req.getParameter("baseCode");
-        String targetCode = req.getParameter("targetCode");
+        String baseCode = req.getParameter("baseCurrencyCode");
+        String targetCode = req.getParameter("targetCurrencyCode");
         String rate = req.getParameter("rate");
         try {
             Optional<Currency> baseCurrency = currencyRepository.findByCode(baseCode);
@@ -61,7 +65,9 @@ public class ExchangeRatesServlet extends HttpServlet {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database, try again later!"));
         }
     }
 
@@ -71,7 +77,9 @@ public class ExchangeRatesServlet extends HttpServlet {
             final String id = req.getParameter("id");
             exchangeRateRepository.delete(Long.valueOf(id));
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            resp.setStatus(SC_INTERNAL_SERVER_ERROR);
+            mapper.writeValue(resp.getWriter(), new ErrorResponse(SC_INTERNAL_SERVER_ERROR,
+                    "Something happened with the database, try again later!"));
         }
     }
 }

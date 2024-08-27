@@ -39,17 +39,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
 
             ResultSet resultSet = preparedStatement.getResultSet();
             if (resultSet.next()){
-                return Optional.of(new ExchangeRate(
-                        resultSet.getLong("id"),
-                        new Currency(resultSet.getLong("base_id"),
-                                resultSet.getString("base_code"),
-                                resultSet.getString("base_full_name"),
-                                resultSet.getString("base_sign")),
-                        new Currency(resultSet.getLong("target_id"),
-                                resultSet.getString("target_code"),
-                                resultSet.getString("target_full_name"),
-                                resultSet.getString("target_sign")),
-                        resultSet.getBigDecimal("rate")));
+                return Optional.of(makeExchangeRate(resultSet));
             }
             return Optional.empty();
 
@@ -80,17 +70,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
 
             List<ExchangeRate> exchangeRatesList = new ArrayList<>();
             while (resultSet.next()){
-                exchangeRatesList.add(new ExchangeRate(
-                        resultSet.getLong("id"),
-                        new Currency(resultSet.getLong("base_id"),
-                                     resultSet.getString("base_code"),
-                                     resultSet.getString("base_full_name"),
-                                     resultSet.getString("base_sign")),
-                        new Currency(resultSet.getLong("target_id"),
-                                     resultSet.getString("target_code"),
-                                     resultSet.getString("target_full_name"),
-                                     resultSet.getString("target_sign")),
-                        resultSet.getBigDecimal("rate")));
+                exchangeRatesList.add(makeExchangeRate(resultSet));
             }
             return exchangeRatesList;
         }
@@ -109,7 +89,7 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
             preparedStatement.setBigDecimal(3,element.getRate());
             preparedStatement.execute();
 
-            ResultSet resultSet = preparedStatement.getResultSet();
+            ResultSet resultSet = preparedStatement.getGeneratedKeys();
             resultSet.next();
             Long savedId = resultSet.getLong("id");
 
@@ -117,6 +97,22 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
 
             return savedId;
 
+        }
+    }
+
+    @Override
+    public void update(ExchangeRate element) throws SQLException {
+        final String sql = "update exchangerates set (basecurrencyid,targetcurrencyid,rate) " +
+                "=(?,?,?) where id = ?";
+
+        try (Connection connection = dataSource.getConnection()){
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1,element.getBaseCurrency().getId());
+            preparedStatement.setLong(2,element.getTargetCurrency().getId());
+            preparedStatement.setBigDecimal(3,element.getRate());
+            preparedStatement.setLong(4,element.getId());
+
+            preparedStatement.execute();
         }
     }
 
@@ -129,5 +125,53 @@ public class JdbcExchangeRateRepository implements ExchangeRateRepository{
             preparedStatement.setLong(1,id);
             preparedStatement.execute();
         }
+    }
+
+    @Override
+    public Optional<ExchangeRate> findByCode(String baseCurrencyCode, String targetCurrencyCode) throws SQLException {
+        String sql = "SELECT\n" +
+                "    er.id AS id,\n" +
+                "    bc.id AS base_id,\n" +
+                "    bc.code AS base_code,\n" +
+                "    bc.fullname AS base_name,\n" +
+                "    bc.sign AS base_sign,\n" +
+                "    tc.id AS target_id,\n" +
+                "    tc.code AS target_code,\n" +
+                "    tc.fullname AS target_name,\n" +
+                "    tc.sign AS target_sign,\n" +
+                "    er.rate AS rate\n" +
+                "FROM exchangerates er\n" +
+                "         JOIN currencies bc ON er.basecurrencyid = bc.id\n" +
+                "         JOIN currencies tc ON er.targetcurrencyid = tc.id\n" +
+                "WHERE (\n" +
+                "          basecurrencyid = (SELECT c.id FROM currencies c WHERE c.code = ?) AND\n" +
+                "          targetcurrencyid = (SELECT c2.id FROM currencies c2 WHERE c2.code = ?))";
+        try (Connection connection = dataSource.getConnection()){
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1,baseCurrencyCode);
+            preparedStatement.setString(2,targetCurrencyCode);
+            preparedStatement.execute();
+
+            ResultSet resultSet = preparedStatement.getResultSet();
+            if (resultSet.next()){
+                return Optional.of(makeExchangeRate(resultSet));
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static ExchangeRate makeExchangeRate(ResultSet resultSet) throws SQLException {
+        return new ExchangeRate(
+                resultSet.getLong("id"),
+                new Currency(resultSet.getLong("base_id"),
+                        resultSet.getString("base_code"),
+                        resultSet.getString("base_name"),
+                        resultSet.getString("base_sign")),
+                new Currency(resultSet.getLong("target_id"),
+                        resultSet.getString("target_code"),
+                        resultSet.getString("target_name"),
+                        resultSet.getString("target_sign")),
+                resultSet.getBigDecimal("rate"),
+                null);
     }
 }

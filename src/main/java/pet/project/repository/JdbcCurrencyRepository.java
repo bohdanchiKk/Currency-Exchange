@@ -24,10 +24,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
             ResultSet resultSet = preparedStatement.getResultSet();
 
             if (resultSet.next()){
-                return Optional.of(new pet.project.entity.Currency(
-                        resultSet.getString("code"),
-                        resultSet.getString("fullName"),
-                        resultSet.getString("sign")));
+                return Optional.of(makeCurrency(resultSet));
             }
         }
         return Optional.empty();
@@ -43,12 +40,7 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
             List<pet.project.entity.Currency> currencyList = new ArrayList<>();
             while (resultSet.next()){
-                currencyList.add(new pet.project.entity.Currency(
-                        resultSet.getLong("id"),
-                        resultSet.getString("code"),
-                        resultSet.getString("fullName"),
-                        resultSet.getString("sign")
-                ));
+                currencyList.add(makeCurrency(resultSet));
             }
             return currencyList;
         }
@@ -78,6 +70,11 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
     }
 
     @Override
+    public void update(Currency element) throws SQLException {
+        
+    }
+
+    @Override
     public void delete(Long id) throws SQLException {
         final String sql = "delete * from currencies where currencies.id = ?";
 
@@ -101,15 +98,19 @@ public class JdbcCurrencyRepository implements CurrencyRepository {
 
             ResultSet resultSet = preparedStatement.getResultSet();
             if (resultSet.next()){
-                return Optional.of(new Currency(
-                        resultSet.getLong("id"),
-                        resultSet.getString("code"),
-                        resultSet.getString("fullname"),
-                        resultSet.getString("sign")
-                ));
+                return Optional.of(makeCurrency(resultSet));
             }
             return Optional.empty();
         }
+    }
+
+    public static Currency makeCurrency(ResultSet resultSet) throws SQLException {
+        return new Currency(
+                resultSet.getLong("id"),
+                resultSet.getString("code"),
+                resultSet.getString("fullname"),
+                resultSet.getString("sign")
+        );
     }
 }
 

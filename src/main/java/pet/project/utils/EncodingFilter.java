@@ -1,4 +1,4 @@
-package pet.project;
+package pet.project.utils;
 
 import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
@@ -26,7 +26,7 @@ public class EncodingFilter implements Filter {
     }
     private void setCorsHeaders(HttpServletResponse resp) {
         resp.setHeader("Access-Control-Allow-Origin", "*"); // Allow all origins
-        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS"); // Allow specific HTTP methods
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH"); // Allow specific HTTP methods
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization"); // Allow specific headers
         resp.setHeader("Access-Control-Allow-Credentials", "true"); // Allow cookies
     }
